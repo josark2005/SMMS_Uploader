@@ -30,4 +30,6 @@
 
 鸣谢：[SMMS图床](https://sm.ms)
 
+电报交流群：[https://t.me/smmsuploader](https://t.me/smmsuploader)
+
 且用且珍惜！
