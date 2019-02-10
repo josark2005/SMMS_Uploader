@@ -177,6 +177,7 @@ def upload(Listbox_var):
                 'File has an invalid extension.',
                 'Could not save uploaded file.',
                 'Request Entity Too Large.',
+                'No files were uploaded.'
             ]
             if (delete in exception):
                 _files.remove(file)
