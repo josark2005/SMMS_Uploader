@@ -195,6 +195,8 @@ def upload(Listbox_var):
 
 
 if __name__ == '__main__':
+    # 版本定义
+    VERSION = '1.0.0-preview'
     # 多线程定义
     t_upload = {}
     # 上传模式定义
@@ -211,7 +213,7 @@ if __name__ == '__main__':
     win.iconbitmap(tempfile)
     os.remove(tempfile)
 
-    win.title('SMMS图床上传工具')
+    win.title('SMMS图床上传工具 ' + VERSION)
 
     # 读取已上传列表
     sUpload = readSuccessList()
