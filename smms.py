@@ -28,9 +28,12 @@ class smms:
         return r
 
     def parseJson(self, r):
-        data = r.data.decode()
+        data = r.data.decode('utf-8')
         print(data)
-        return json.loads(data)
+        if (data.find('Request Entity Too Large') != -1):
+            return {'msg': 'Request Entity Too Large.'}
+        else:
+            return json.loads(data)
 
 
 def test():

@@ -22,8 +22,9 @@ def v1():
     for url in delurls:
         now = now + 1
         print(str(now) + '/' + str(count))
-        r = http.request('GET', url, headers={'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) WallpaperBackuper/1.0.0'},)
-        print(r.data.decode())
+        r = http.request('GET', url, headers={'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) WallpaperBackuper/1.0.0'})
+        if (not r.find('File delete success.') == -1 or not r.find('File already deleted.') == -1):
+            print(str(now) + '/' + str(count) + '删除成功！')
 
 
 def v2():
@@ -38,9 +39,10 @@ def v2():
     now = 0
     for url in delurls:
         now = now + 1
-        print(str(now) + '/' + str(count))
-        r = http.request('GET', url, headers={'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) WallpaperBackuper/1.0.0'},)
-        print(r.data.decode())
+        r = http.request('GET', url, headers={'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) WallpaperBackuper/1.0.0'})
+        r = r.data.decode()
+        if (not r.find('File delete success.') == -1 or not r.find('File already deleted.') == -1):
+            print(str(now) + '/' + str(count) + '删除成功！')
 
 
 if __name__ == '__main__':

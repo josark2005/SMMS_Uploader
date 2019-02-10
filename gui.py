@@ -2,13 +2,17 @@
 # -*- coding: utf-8 -*-
 
 import os
+import ico
+import time
 import base64
+import threading
 import tkinter as tk
 import tkinter.ttk
 import tkinter.messagebox
 import tkinter.filedialog
-import ico
+import win32clipboard as wcb
 from scanner import scanner
+from smms import smms
 
 # 全局变量定义
 # 文件选择器返回值
@@ -80,6 +84,19 @@ def _lsbox_remove():
     lsbox.select_clear(0, len(_files)-1)
 
 
+def _treeview_copy(type):
+    list = []
+    for item in treeview.selection():
+        item_text = treeview.item(item, 'values')
+        list.append(item_text[type])
+    list = '\r\n'.join(list)
+    # 复制到剪贴板
+    wcb.OpenClipboard()
+    wcb.EmptyClipboard()
+    wcb.SetClipboardText(list)
+    wcb.CloseClipboard()
+
+
 # 读取已成功上传列表
 def readSuccessList():
     if not (os.path.exists('./save.txt')):
@@ -94,7 +111,90 @@ def readSuccessList():
     return list
 
 
+def operating_area(state=0):
+    if (state == 0):
+        # 闲置模式
+        btn_selector['state'] = tk.NORMAL
+        btn_upload['state'] = tk.NORMAL
+        btn_pause['state'] = tk.DISABLED
+    elif (state == 1):
+        # 上传模式
+        btn_selector['state'] = tk.DISABLED
+        btn_upload['state'] = tk.DISABLED
+        btn_pause['state'] = tk.NORMAL
+
+
+# 开始上传
+def _start_upload():
+    global t_upload
+    operating_area(1)
+    t_upload['status'] = True
+    t_upload['thread'] = threading.Thread(target=upload, args=[lsbox_files], daemon=True)
+    t_upload['thread'].start()
+
+
+# 停止上传
+def _stop_upload():
+    global t_upload
+    try:
+        t_upload['status'] = False
+    finally:
+        print('停止上传')
+    operating_area(0)
+
+
+# 上传队列中的文件
+def upload(Listbox_var):
+    global _files
+    global t_upload
+    uploader = smms()
+    while len(_files) != 0:
+        # 判断是否要求结束
+        if (t_upload['status'] is False):
+            break
+        file = _files[0]
+        file_open = open(file, 'rb')
+        file_data = file_open.read()
+        file_open.close()
+        res = uploader.post(file, file_data)
+        res = uploader.parseJson(res)
+        if (res['code'] == 'success' and 'msg' not in res):
+            # 成功删除此项任务
+            _files.remove(file)
+            cdn = res['data']['url']
+            delete = res['data']['delete']
+            # 本地路径-在线地址-删除地址
+            file_open = open('save.txt', 'a', newline='\n')
+            file_open.write(file + ',' + cdn + ',' + delete + '\n')
+            file_open.close()
+        else:
+            cdn = 'error'
+            delete = res['msg']
+            # 文件过大或不支持的后缀名或无法存储或空文档
+            exception = [
+                'File is empty.',
+                'File is too large.',
+                'File has an invalid extension.',
+                'Could not save uploaded file.',
+                'Request Entity Too Large.',
+            ]
+            if (delete in exception):
+                _files.remove(file)
+            # 失败文件- 失败原因
+            file_open = open('fail.txt', 'a', newline='\n')
+            file_open.write(file + ',' + res['msg'] + '\n')
+            file_open.close()
+        data = (file, cdn, delete)
+        treeview.insert('', 'end', value=data)
+        listboxRenew(Listbox_var, _files)
+        # 暂停1秒以避免错误
+        time.sleep(0)
+    operating_area(0)
+
+
 if __name__ == '__main__':
+    # 多线程定义
+    t_upload = {}
     # 上传模式定义
     upload_modes = [('单个上传', 0, 'normal'), ('群组上传', 1, 'disable')]
     # 选择模式定义
@@ -151,10 +251,13 @@ if __name__ == '__main__':
     lf_operator = tk.LabelFrame(mainFrame, text='操作区', fg='blue')
     lf_operator.grid(row=0, rowspan=2, column=1, padx=10, pady=10, sticky=tk.N+tk.S+tk.E+tk.W)
     # RadioButton
-    btn_selector = tk.Button(lf_operator, text='选择', command=lambda: selector(vSelector.get()), width=10)
+    btn_selector = tk.Button(lf_operator, text='选择', width=10, command=lambda: selector(vSelector.get()))
     btn_selector.grid(padx=10, pady=10, sticky=tk.N+tk.S+tk.E+tk.W)
-    btn_upload = tk.Button(lf_operator, text='上传', width=10)
+    btn_upload = tk.Button(lf_operator, text='上传', width=10, command=lambda: _start_upload())
     btn_upload.grid(padx=10, pady=10, sticky=tk.N+tk.S+tk.E+tk.W)
+    btn_pause = tk.Button(lf_operator, text='暂停', width=10, command=lambda: _stop_upload())
+    btn_pause['state'] = tk.DISABLED
+    btn_pause.grid(padx=10, pady=10, sticky=tk.N+tk.S+tk.E+tk.W)
 
     # 已选文件列表
     lf_lsbox = tk.LabelFrame(mainFrame, text='等待上传文件列表', fg='red')
@@ -165,7 +268,6 @@ if __name__ == '__main__':
     # 右键菜单
     lsbx_rbmenu = tk.Menu(lsbox, tearoff=False)
     lsbx_rbmenu.add_command(label='删除', command=_lsbox_remove)
-    # 事件绑定
     lsbox.bind('<Button-3>', func=lambda event: lsbx_rbmenu.post(event.x_root, event.y_root))
     # 滚动条
     lsbox_yscrollbar = tk.Scrollbar(lf_lsbox, command=lsbox.yview)
@@ -176,22 +278,8 @@ if __name__ == '__main__':
     lsbox.config(xscrollcommand=lsbox_xscrollbar.set)
 
     # 已上传文件列表
-    lf_treeview = tk.LabelFrame(mainFrame, text='已上传文件列表（右键复制）', fg='green')
+    lf_treeview = tk.LabelFrame(mainFrame, text='已上传文件列表（右键复制 | 支持多选）', fg='green')
     lf_treeview.grid(row=2, column=0, columnspan=4, padx=10, pady=10, sticky=tk.N+tk.S+tk.E+tk.W)
-    # lsbox2_files = tk.StringVar()
-    # sUploadList = []
-    # for sup in sUpload:
-    #     sUploadList.append(sup[0])
-    # lsbox2_files.set(sUploadList)
-    # lsbox2 = tk.Listbox(lf_lsbox2, selectmode=tk.BROWSE, listvariable=lsbox2_files, width=100, relief=tk.FLAT)
-    # lsbox2.grid(sticky=tk.N+tk.S+tk.E+tk.W)
-    # # 滚动条
-    # lsbox2_yscrollbar = tk.Scrollbar(lf_lsbox2, command=lsbox2.yview)
-    # lsbox2_yscrollbar.grid(row=0, column=1, sticky=tk.N+tk.S+tk.E+tk.W)
-    # lsbox2.config(yscrollcommand=lsbox2_yscrollbar.set)
-    # lsbox2_xscrollbar = tk.Scrollbar(lf_lsbox2, command=lsbox2.xview, orient='horizontal')
-    # lsbox2_xscrollbar.grid(row=1, column=0, sticky=tk.N+tk.S+tk.E+tk.W)
-    # lsbox2.config(xscrollcommand=lsbox2_xscrollbar.set)
     treeview = tk.ttk.Treeview(lf_treeview, columns=['path', 'cdn', 'delete'], show='headings', height=10)
     treeview.grid(sticky=tk.N+tk.S+tk.E+tk.W)
     treeview.column('path', width=550, anchor='w')
@@ -202,6 +290,18 @@ if __name__ == '__main__':
     treeview.heading('delete', text='删除链接')
     for sup in sUpload:
         id = treeview.insert('', sUpload.index(sup), value=sup)
+    # 滚动条
+    treeview_sby = tk.Scrollbar(lf_treeview, orient=tk.VERTICAL, command=treeview.yview)
+    treeview.configure(yscrollcommand=treeview_sby.set)
+    treeview_sby.grid(row=0, column=1, sticky=tk.N+tk.S)
+    # 右键菜单
+    treeview_rbmenu = tk.Menu(treeview, tearoff=False)
+    treeview_rbmenu.add_command(label='复制CDN地址', command=lambda: _treeview_copy(1))
+    treeview_rbmenu.add_command(label='复制删除地址', command=lambda: _treeview_copy(2))
+    treeview_rbmenu.add_command(label='复制本地路径', command=lambda: _treeview_copy(0))
+    treeview_rbmenu.add_separator()
+    treeview_rbmenu.add_command(label='删除记录', command=_lsbox_remove, state=tk.DISABLED)
+    treeview.bind('<Button-3>', func=lambda event: treeview_rbmenu.post(event.x_root, event.y_root))
 
     # Footer
     label_bottom = tk.Label(mainFrame, text='Made by Joe', fg='#878787')
