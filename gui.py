@@ -5,6 +5,7 @@ import os
 import ico
 import time
 import base64
+import tempfile
 import threading
 import tkinter as tk
 import tkinter.ttk
@@ -203,11 +204,12 @@ if __name__ == '__main__':
     # 创建窗口
     win = tk.Tk()
     win.resizable(width=False, height=False)
-    icon = open('./icon.ico', 'wb')
+    tempfile = tempfile.mktemp()
+    icon = open(tempfile, 'wb')
     icon.write(base64.b64decode(ico.ico))
     icon.close()
-    win.iconbitmap('./icon.ico')
-    os.remove('./icon.ico')
+    win.iconbitmap(tempfile)
+    os.remove(tempfile)
 
     win.title('SMMS图床上传工具')
 
