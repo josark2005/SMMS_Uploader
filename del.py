@@ -28,7 +28,7 @@ def v1():
 
 
 def v2():
-    file = open('save.txt', 'r+')
+    file = open('save.txt', 'r+', encoding='utf-8')
     filelist = file.readlines()
     delurls = []
     for line in filelist:

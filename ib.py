@@ -25,14 +25,14 @@ for tname in files:
     r = uploader.parseJson(r)
     if (r['code'] == 'success' and 'msg' not in r):
         # 本地路径-在线地址-删除地址
-        file = open('save.txt', 'a', newline='\n')
+        file = open('save.txt', 'a', newline='\n', encoding='utf-8')
         file.write(tname + ',' + r['data']['url'] + ',' + r['data']['delete'] + '\n')
         file.close()
-        file = open('links.txt', 'a', newline='\n')
+        file = open('links.txt', 'a', newline='\n', encoding='utf-8')
         file.write(r['data']['url'])
         file.close()
     else:
         # 失败文件- 失败原因
-        file = open('fail.txt', 'a', newline='\n')
+        file = open('fail.txt', 'a', newline='\n', encoding='utf-8')
         file.write(tname + ',' + r['msg'])
         file.close()
