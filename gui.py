@@ -34,20 +34,21 @@ def msgbox(message, title='提示', type='info'):
 # 文件选择器
 def selector(mode=0):
     global _files
-    filetypes = [('Image files', '*.png;*.jpg;*.gif')]
+    filetypes = ['.png', '.jpg', 'gif']
+    filetypes_2 = [('Image files', '*.png;*.jpg;*.gif')]
     if (mode == 0):
         print('单文件选择')
-        files = tk.filedialog.askopenfilename(filetypes=filetypes)
+        files = tk.filedialog.askopenfilename(filetypes=filetypes_2)
         _files.append(files)
     elif (mode == 1):
         print('多文件选择')
-        files = tk.filedialog.askopenfilenames(filetypes=filetypes)
+        files = tk.filedialog.askopenfilenames(filetypes=filetypes_2)
         _files.extend(list(files))
     elif (mode == 2):
         print('文件夹遍历')
         directory = tk.filedialog.askdirectory()
         scan = scanner()
-        _files.extend(scan.scan(directory))
+        _files.extend(scan.scan(directory, filetypes))
         pass
     elif (mode == 3):
         # 单层文件夹
@@ -253,7 +254,7 @@ def upload(Listbox_var):
 
 if __name__ == '__main__':
     # 版本定义
-    VERSION = '1.0.1'
+    VERSION = '1.0.2'
     # 上传延迟
     upload_delay = 0
     # 多线程定义
