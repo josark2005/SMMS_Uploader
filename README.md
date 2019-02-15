@@ -33,14 +33,22 @@
 
 - 系统必须是Win7 SP1 或以上版本
 - `缺少api-ms-win-crt-runtime-l1-1-0.dll`等错误提示请安装`KB2999226`补丁[微软官网下载](https://www.microsoft.com/en-us/download/details.aspx?id=49093)
-  - ![缺少api-ms-win-crt-runtime-l1-1-0.dll](https://i.loli.net/2019/02/11/5c604b9694d4b.png)
-  <!-- xGYHMCn9kFuXRIJ -->
 - 其他情况请提交ISSUE以获得支持
 
 ## 额外依赖（具体依赖请自行查看源代码）
 
 - urllib3
 - pywin32
+
+## 其他文档
+
+- [常见错误及解决方案](./error.md)
+
+## 更新日志（important only）
+
+- 修复中文文件名无法上传的问题
+- 修复文件过大情况下上传失败的问题
+- 增加上传提示
 
 ---
 
