@@ -1,4 +1,4 @@
-# ![SMMS Uploader](https://i.loli.net/2019/02/10/5c5fc5fbe1018.png) SMMS Uploader 图床上传工具
+# ![SMMS Uploader](https://i.loli.net/2019/02/15/5c6678567831c.jpg) SMMS Uploader 图床上传工具
 
 ![SMMS Uploader GUI](https://i.loli.net/2019/02/15/5c664a4168958.jpg)
 
