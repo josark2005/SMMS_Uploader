@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
 import ico
 import time
 import base64
@@ -103,7 +104,7 @@ def readSuccessList():
     if not (os.path.exists('./save.txt')):
         return []
     list = []
-    file = open('save.txt', 'r+')
+    file = open('save.txt', 'r+', encoding='utf-8')
     filelists = file.readlines()
     for filelist in filelists:
         info = filelist.strip().split(sep=',', maxsplit=2)
@@ -134,6 +135,10 @@ def _start_upload():
     t_upload['thread'].start()
 
 
+def show_status(text):
+    label3_bottom['text'] = text
+
+
 # 停止上传
 def _stop_upload():
     global t_upload
@@ -142,31 +147,50 @@ def _stop_upload():
     finally:
         print('停止上传')
     operating_area(0)
+    show_status('就绪')
+
+
+# 变量调整器
+def _t_upload(var, value):
+    global t_upload
+    t_upload[var] = value
 
 
 # 上传队列中的文件
 def upload(Listbox_var):
     global _files
     global t_upload
+    is_insert = False
     uploader = smms()
     while len(_files) != 0:
-        # 判断是否要求结束
+        show_status('上传准备中')
+        # 判断是否要求结束或暂停
         if (t_upload['status'] is False):
+            show_status('上传已终止')
             break
+        elif (t_upload['status'] == 'pause'):
+            print('upload paused')
+            while(t_upload['status'] == 'pause'):
+                pass
+        show_status('准备文件中')
         file = _files[0]
+        show_status('读取文件：' + os.path.basename(file))
         file_open = open(file, 'rb')
         file_data = file_open.read()
         file_open.close()
+        show_status('上传文件：' + os.path.basename(file))
         res = uploader.post(file, file_data)
         res = uploader.parseJson(res)
+        show_status('解析结果中')
         if (res['code'] == 'success' and 'msg' not in res):
             # 成功删除此项任务
+            is_insert = True
             _files.remove(file)
             cdn = res['data']['url']
             delete = res['data']['delete']
             # 本地路径-在线地址-删除地址
-            file_open = open('save.txt', 'a', newline='\n')
-            file_open.write(file + ',' + cdn + ',' + delete + '\n')
+            file_open = open('save.txt', 'a+', newline='\n', encoding='utf-8')
+            file_open.write(str(file.encode('utf-8'), 'utf-8') + ',' + cdn + ',' + delete + '\n')
             file_open.close()
         else:
             cdn = 'error'
@@ -180,23 +204,58 @@ def upload(Listbox_var):
                 'Request Entity Too Large.',
                 'No files were uploaded.'
             ]
+            search = re.search(r'left\s(\d{1,})\ssecond', delete)
             if (delete in exception):
                 _files.remove(file)
+                is_insert = True
+            else:
+                is_insert = False
+                if (search is not None):
+                    restTime = int(search.group(1))
+                    interval = 1
+                    print('上传频率限制，' + str(restTime) + '秒后继续上传')
+                    while restTime > 0:
+                        # 检测状态
+                        if (t_upload['status'] is False):
+                            show_status('上传已终止')
+                            break
+                        restTime -= interval
+                        show_status('上传频率限制，' + str(restTime) + '秒后继续上传')
+                        time.sleep(interval)
+                # urllib3报错
+                if (delete == 'Connection failed.'):
+                    show_status('连接服务器失败，3秒后重试')
+                    time.sleep(3)
+                # 上传频率过快
+                if (delete == 'Upload file frequency limit.'):
+                    show_status('上传频率过快，3秒后继续上传')
+                    time.sleep(3)
+                # 返回值不匹配
+                if (delete == 'Bad Json Data.'):
+                    show_status('无法解析服务器响应')
+                    break
+
             # 失败文件- 失败原因
-            file_open = open('fail.txt', 'a', newline='\n')
+            file_open = open('fail.txt', 'a', newline='\n', encoding='utf-8')
             file_open.write(file + ',' + res['msg'] + '\n')
             file_open.close()
         data = (file, cdn, delete)
-        treeview.insert('', 'end', value=data)
+        if (is_insert is True):
+            treeview.insert('', 'end', value=data)
         listboxRenew(Listbox_var, _files)
         # 暂停1秒以避免错误
-        time.sleep(0)
+        time.sleep(upload_delay)
+    t_upload['status'] = False
+    time.sleep(3)
+    show_status('就绪')
     operating_area(0)
 
 
 if __name__ == '__main__':
     # 版本定义
-    VERSION = '1.0.0-preview'
+    VERSION = '1.0.1'
+    # 上传延迟
+    upload_delay = 0
     # 多线程定义
     t_upload = {}
     # 上传模式定义
@@ -309,10 +368,17 @@ if __name__ == '__main__':
     treeview.bind('<Button-3>', func=lambda event: treeview_rbmenu.post(event.x_root, event.y_root))
 
     # Footer
-    label_bottom = tk.Label(mainFrame, text='Made by Joe', fg='#878787')
-    label_bottom_info = '作者：Joe\n鸣谢：SM.MS图床\n本程序开源免费，若有不良商家售卖，给差评！'
-    label_bottom.bind('<Double-Button-1>', lambda t: msgbox(label_bottom_info))
-    label_bottom.grid(row=3, columnspan=4)
+    label_bottom = tk.Label(mainFrame, text='使用须知', fg='blue')
+    label_bottom_info = '1、不得将本工具用作任何商业用途\n2、请严格遵守SM.MS图床的相关使用规定\n3、上传的内容与本工具及本工具作者无关'
+    label_bottom.bind('<Button-1>', lambda t: msgbox(label_bottom_info, title='使用须知'))
+    label_bottom.grid(row=3, column=0)
+    label2_bottom = tk.Label(mainFrame, text='Made by Joe', fg='#878787')
+    label2_bottom_info = '作者：Joe\n鸣谢：SM.MS图床\n本程序开源免费，若有不良商家售卖，给差评！'
+    label2_bottom.bind('<Double-Button-1>', lambda t: msgbox(label2_bottom_info, title='关于作者'))
+    label2_bottom.grid(row=3, column=3, padx=5, sticky=tk.E)
+    label3_bottom = tk.Label(mainFrame, text='就绪', fg='red')
+    label3_bottom_info = '作者：Joe\n鸣谢：SM.MS图床\n本程序开源免费，若有不良商家售卖，给差评！'
+    label3_bottom.grid(row=3, column=1, columnspan=2, padx=5, sticky=tk.W)
 
     # 循环
     tk.mainloop()
