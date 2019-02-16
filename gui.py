@@ -16,10 +16,6 @@ import win32clipboard as wcb
 from scanner import scanner
 from smms import smms
 
-# 全局变量定义
-# 文件选择器返回值
-_files = []
-
 
 # 消息盒子定义
 def msgbox(message, title='提示', type='info'):
@@ -161,9 +157,10 @@ def _t_upload(var, value):
 def upload(Listbox_var):
     global _files
     global t_upload
-    is_insert = False
     uploader = smms()
     while len(_files) != 0:
+        is_upload = True
+        is_insert = False
         show_status('上传准备中')
         # 判断是否要求结束或暂停
         if (t_upload['status'] is False):
@@ -175,14 +172,36 @@ def upload(Listbox_var):
                 pass
         show_status('准备文件中')
         file = _files[0]
-        show_status('读取文件：' + os.path.basename(file))
-        file_open = open(file, 'rb')
-        file_data = file_open.read()
-        file_open.close()
-        show_status('上传文件：' + os.path.basename(file))
-        res = uploader.post(file, file_data)
-        res = uploader.parseJson(res)
-        show_status('解析结果中')
+        # 检查文件大小
+        if (vSL.get() == 1):
+            show_status('检查文件大小中')
+            try:
+                fsize = os.path.getsize(file)
+            except Exception:
+                fsize = False
+            if (fsize is False):
+                is_upload = True
+                print('获取文件大小失败，尝试上传')
+            else:
+                if (fsize > (5 * 1024 * 1024)):
+                    is_upload = False
+                    err_msg = 'File is too large.'
+                    show_status('文件过大')
+            show_status('读取文件：' + os.path.basename(file))
+            try:
+                with open(file, 'rb') as file_open:
+                    file_data = file_open.read()
+            except Exception:
+                is_upload = False
+                err_msg = 'Failed to open file.'
+                show_status('读取文件失败')
+        if (is_upload is True):
+            show_status('上传文件：' + os.path.basename(file))
+            res = uploader.post(file, file_data)
+            res = uploader.parseJson(res)
+            show_status('解析结果中')
+        else:
+            res = {'code': 'error', 'msg': err_msg}
         if (res['code'] == 'success' and 'msg' not in res):
             # 成功删除此项任务
             is_insert = True
@@ -203,7 +222,8 @@ def upload(Listbox_var):
                 'File has an invalid extension.',
                 'Could not save uploaded file.',
                 'Request Entity Too Large.',
-                'No files were uploaded.'
+                'No files were uploaded.',
+                'Failed to open file.'
             ]
             search = re.search(r'left\s(\d{1,})\ssecond', delete)
             if (delete in exception):
@@ -254,11 +274,13 @@ def upload(Listbox_var):
 
 if __name__ == '__main__':
     # 版本定义
-    VERSION = '1.0.2'
+    VERSION = '1.0.3'
     # 上传延迟
     upload_delay = 0
     # 多线程定义
     t_upload = {}
+    # 文件选择器返回值
+    _files = []
     # 上传模式定义
     upload_modes = [('单个上传', 0, 'normal'), ('群组上传', 1, 'disable')]
     # 选择模式定义
@@ -296,9 +318,10 @@ if __name__ == '__main__':
     lf_others.grid(row=0, column=3, rowspan=2, padx=10, pady=10, sticky=tk.N+tk.S+tk.E+tk.W)
     vDR = tk.IntVar()
     vSL = tk.IntVar()
+    vSL.set(1)
     cb_duplicateRemoval = tk.Checkbutton(lf_others, text='检查上传重复（本地）', variable=vDR, state=tk.DISABLED)
     cb_duplicateRemoval.grid(row=0, column=0, sticky=tk.W+tk.S)
-    cb_sizeLimitation = tk.Checkbutton(lf_others, text='过滤大于5M的文件', variable=vSL, state=tk.DISABLED)
+    cb_sizeLimitation = tk.Checkbutton(lf_others, text='过滤大于5M的文件', variable=vSL, state=tk.NORMAL)
     cb_sizeLimitation.grid(row=1, column=0, sticky=tk.W+tk.S)
 
     # 选择器模式标签框架
