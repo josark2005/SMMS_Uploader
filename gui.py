@@ -367,7 +367,7 @@ if __name__ == '__main__':
 
     # 已上传文件列表
     lf_treeview = tk.LabelFrame(mainFrame, text='已上传文件列表（右键复制 | 支持多选）', fg='green')
-    lf_treeview.grid(row=2, column=0, columnspan=4, padx=10, pady=10, sticky=tk.N+tk.S+tk.E+tk.W)
+    lf_treeview.grid(row=2, column=0, columnspan=4, padx=10, pady=5, sticky=tk.N+tk.S+tk.E+tk.W)
     treeview = tk.ttk.Treeview(lf_treeview, columns=['path', 'cdn', 'delete'], show='headings', height=10)
     treeview.grid(sticky=tk.N+tk.S+tk.E+tk.W)
     treeview.column('path', width=550, anchor='w')
@@ -392,17 +392,16 @@ if __name__ == '__main__':
     treeview.bind('<Button-3>', func=lambda event: treeview_rbmenu.post(event.x_root, event.y_root))
 
     # Footer
-    label_bottom = tk.Label(mainFrame, text='使用须知', fg='blue')
+    label_bottom = tk.Label(mainFrame, text='使用须知', fg='#878787')
     label_bottom_info = '1、不得将本工具用作任何商业用途\n2、请严格遵守SM.MS图床的相关使用规定\n3、上传的内容与本工具及本工具作者无关'
     label_bottom.bind('<Button-1>', lambda t: msgbox(label_bottom_info, title='使用须知'))
-    label_bottom.grid(row=3, column=0)
+    label_bottom.grid(row=3, column=0, padx=10, sticky=tk.W)
     label2_bottom = tk.Label(mainFrame, text='Made by Joe', fg='#878787')
     label2_bottom_info = '作者：Joe\n鸣谢：SM.MS图床\n本程序开源免费，若有不良商家售卖，给差评！'
     label2_bottom.bind('<Double-Button-1>', lambda t: msgbox(label2_bottom_info, title='关于作者'))
     label2_bottom.grid(row=3, column=3, padx=5, sticky=tk.E)
-    label3_bottom = tk.Label(mainFrame, text='就绪', fg='red')
-    label3_bottom_info = '作者：Joe\n鸣谢：SM.MS图床\n本程序开源免费，若有不良商家售卖，给差评！'
-    label3_bottom.grid(row=3, column=1, columnspan=2, padx=5, sticky=tk.W)
+    label3_bottom = tk.Label(mainFrame, text='就绪', fg='#fa6333')
+    label3_bottom.grid(row=3, column=1, columnspan=2, padx=10, sticky=tk.W+tk.S)
 
     # 循环
     tk.mainloop()
