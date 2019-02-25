@@ -1,16 +1,14 @@
 # ![SMMS Uploader](https://i.loli.net/2019/02/15/5c6678567831c.jpg) SMMS Uploader 图床上传工具
 
-![SMMS Uploader GUI](https://i.loli.net/2019/02/15/5c664a4168958.jpg)
+![SMMS Uploader GUI](https://i.loli.net/2019/02/25/5c73f97648e6f.jpg)
 
-<!-- TFSsIYDgiOHxCvk -->
+<!-- lLBk35dDgXNGbQf -->
 
 ## 下载
 
-- [腾讯云开发者平台/Coding发布页（国内推荐）](https://dev.tencent.com/u/Jokin/p/SMMS_Uploader/git/releases)
-- [GitHub发布页（国外推荐）](https://github.com/jokin1999/SMMS_Uploader)
+- [GitHub发布页](https://github.com/jokin1999/SMMS_Uploader)
 
 \*线路无本质区别，请自行选择合适的平台下载
-
 
 ## 文件解释
 
@@ -55,5 +53,3 @@
 鸣谢：[SMMS图床](https://sm.ms)
 
 电报交流群：[https://t.me/smmsuploader](https://t.me/smmsuploader)
-
-[腾讯云开发者平台/Coding](https://dev.tencent.com/u/Jokin/p/SMMS_Uploader/git) | [GitHub](https://github.com/jokin1999/SMMS_Uploader)
