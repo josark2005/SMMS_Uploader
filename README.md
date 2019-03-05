@@ -2,11 +2,13 @@
 
 ![SMMS Uploader GUI](https://i.loli.net/2019/02/25/5c73f97648e6f.jpg)
 
+（界面截图可能与最新版存在细微差别）
+
 <!-- lLBk35dDgXNGbQf -->
 
 ## 下载
 
-- [GitHub发布页](https://github.com/jokin1999/SMMS_Uploader)
+- [GitHub发布页](https://github.com/jokin1999/SMMS_Uploader/release)
 
 \*线路无本质区别，请自行选择合适的平台下载
 
@@ -16,9 +18,9 @@
 - `smms.py` 图床上传模块
 - `scanner.py` 文件扫描模块
 - `ico.py` ICON文件
-- `*save.txt` 上传成功文件列表（自动生成）
-- `*fail.txt` 上传失败文件列表（自动生成）
-- `*links.txt` CDN链接列表（自动生成）
+- `*save.txt` **上传成功文件列表（自动生成）**
+- `*fail.txt` **上传失败文件列表（自动生成）**
+- `*links.txt` **CDN链接列表（自动生成）**
 - `ib.py` 测试文件（非必要文件）
 - `del.py` 自动批量删除模块（非必要文件）
 - `ico2b64.py` ICON转换模块（非必要文件）
@@ -45,8 +47,7 @@
 
 ## 更新日志（important only）
 
-- 新增文件大小过滤
-- 修复无法读取文件导致错误的问题
+- 支持删除记录
 
 ---
 

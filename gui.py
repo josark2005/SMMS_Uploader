@@ -96,6 +96,26 @@ def _treeview_copy(type):
     wcb.CloseClipboard()
 
 
+def _treeview_delete():
+    for item in treeview.selection():
+        item_value = ','.join(treeview.item(item, 'values'))
+        treeview.delete(item)
+        try:
+            with open('./save.txt', 'r+', encoding='utf-8') as f:
+                data = f.read()
+        except Exception:
+            show_status('读取记录时出错，删除失败')
+        else:
+            data = data.split('\n')
+            try:
+                with open('./save.txt', 'w+', encoding='utf-8') as f:
+                    f.write('\n'.join(data))
+            except Exception:
+                show_status('删除时出错，删除失败')
+            else:
+                data.remove(item_value)
+
+
 # 读取已成功上传列表
 def readSuccessList():
     if not (os.path.exists('./save.txt')):
@@ -274,7 +294,7 @@ def upload(Listbox_var):
 
 if __name__ == '__main__':
     # 版本定义
-    VERSION = '1.0.3'
+    VERSION = '1.0.4'
     # 上传延迟
     upload_delay = 0
     # 多线程定义
@@ -388,7 +408,7 @@ if __name__ == '__main__':
     treeview_rbmenu.add_command(label='复制删除地址', command=lambda: _treeview_copy(2))
     treeview_rbmenu.add_command(label='复制本地路径', command=lambda: _treeview_copy(0))
     treeview_rbmenu.add_separator()
-    treeview_rbmenu.add_command(label='删除记录', command=_lsbox_remove, state=tk.DISABLED)
+    treeview_rbmenu.add_command(label='删除记录', command=lambda: _treeview_delete())
     treeview.bind('<Button-3>', func=lambda event: treeview_rbmenu.post(event.x_root, event.y_root))
 
     # Footer
