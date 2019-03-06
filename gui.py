@@ -107,13 +107,22 @@ def _treeview_delete():
             show_status('读取记录时出错，删除失败')
         else:
             data = data.split('\n')
+            data.remove(item_value)
             try:
                 with open('./save.txt', 'w+', encoding='utf-8') as f:
                     f.write('\n'.join(data))
             except Exception:
                 show_status('删除时出错，删除失败')
-            else:
-                data.remove(item_value)
+
+
+def _lsbx_rb(event):
+    if not (len(lsbox.curselection()) == 0):
+        lsbx_rbmenu.post(event.x_root, event.y_root)
+
+
+def _treeview_rb(event):
+    if not (len(treeview.selection()) == 0):
+        treeview_rbmenu.post(event.x_root, event.y_root)
 
 
 # 读取已成功上传列表
@@ -294,7 +303,7 @@ def upload(Listbox_var):
 
 if __name__ == '__main__':
     # 版本定义
-    VERSION = '1.0.4'
+    VERSION = '1.0.5'
     # 上传延迟
     upload_delay = 0
     # 多线程定义
@@ -376,7 +385,8 @@ if __name__ == '__main__':
     # 右键菜单
     lsbx_rbmenu = tk.Menu(lsbox, tearoff=False)
     lsbx_rbmenu.add_command(label='删除', command=_lsbox_remove)
-    lsbox.bind('<Button-3>', func=lambda event: lsbx_rbmenu.post(event.x_root, event.y_root))
+    # lsbox.bind('<Button-3>', func=lambda event: lsbx_rbmenu.post(event.x_root, event.y_root))
+    lsbox.bind('<ButtonRelease-3>', func=lambda event: _lsbx_rb(event))
     # 滚动条
     lsbox_yscrollbar = tk.Scrollbar(lf_lsbox, command=lsbox.yview)
     lsbox_yscrollbar.grid(row=0, column=1, sticky=tk.N+tk.S+tk.E+tk.W)
@@ -409,7 +419,7 @@ if __name__ == '__main__':
     treeview_rbmenu.add_command(label='复制本地路径', command=lambda: _treeview_copy(0))
     treeview_rbmenu.add_separator()
     treeview_rbmenu.add_command(label='删除记录', command=lambda: _treeview_delete())
-    treeview.bind('<Button-3>', func=lambda event: treeview_rbmenu.post(event.x_root, event.y_root))
+    treeview.bind('<ButtonRelease-3>', func=lambda event: _treeview_rb(event))
 
     # Footer
     label_bottom = tk.Label(mainFrame, text='使用须知', fg='#878787')
