@@ -1,10 +1,8 @@
 # ![SMMS Uploader](https://i.loli.net/2019/02/15/5c6678567831c.jpg) SMMS Uploader 图床上传工具
 
-![SMMS Uploader GUI](https://i.loli.net/2019/02/25/5c73f97648e6f.jpg)
+![SMMS Uploader GUI](https://i.loli.net/2019/03/18/5c8f6cd24c9dc.jpg)
 
 （界面截图可能与最新版存在细微差别）
-
-<!-- lLBk35dDgXNGbQf -->
 
 ## 下载
 
@@ -15,6 +13,7 @@
 ## 文件解释
 
 - `gui.py` GUI模块
+- `cloud.py` 云服务模块
 - `smms.py` 图床上传模块
 - `scanner.py` 文件扫描模块
 - `ico.py` ICON文件
@@ -28,14 +27,6 @@
 
 **自动生成的文件可能随版本更新而变动**
 
-## 命令行模式
-
-暂未开发
-
-## GUI模式
-
-都有GUI了不用解释了吧？
-
 ## 额外依赖（具体依赖请自行查看源代码）
 
 - urllib3
@@ -44,11 +35,12 @@
 ## 其他文档
 
 - [常见问题](./faq.md)
+- [中继相关](./relay.md)
 
 ## 更新日志（important only）
 
-- 修复未选择记录的情况下弹出邮件菜单的问题
-- 修复删除上传记录无错误提示却无法删除的问题
+- 修复文件夹遍历不选择的情况下出现自动选择文件的情况
+- 新增转换中继链接
 
 ---
 
