@@ -1,9 +1,12 @@
 #!usr/bin/python3
+"""
+@author:    Jokin
+@link:      https://github.com/jokin1999/SMMS_Uploader
+"""
 # -*- coding: utf-8 -*-
 
 import os
 import re
-import ico
 import time
 import base64
 import tempfile
@@ -13,8 +16,10 @@ import tkinter.ttk
 import tkinter.messagebox
 import tkinter.filedialog
 import win32clipboard as wcb
+import ico
 from scanner import scanner
 from smms import smms
+from cloud import smcloud
 
 
 # 消息盒子定义
@@ -43,9 +48,9 @@ def selector(mode=0):
     elif (mode == 2):
         print('文件夹遍历')
         directory = tk.filedialog.askdirectory()
-        scan = scanner()
-        _files.extend(scan.scan(directory, filetypes))
-        pass
+        if not directory == '':
+            scan = scanner()
+            _files.extend(scan.scan(directory, filetypes))
     elif (mode == 3):
         # 单层文件夹
         # _files = tk.filedialog.askopenfilenames()
@@ -97,11 +102,12 @@ def _treeview_copy(type):
 
 
 def _treeview_delete():
+    global TVFILE
     for item in treeview.selection():
         item_value = ','.join(treeview.item(item, 'values'))
         treeview.delete(item)
         try:
-            with open('./save.txt', 'r+', encoding='utf-8') as f:
+            with open(TVFILE, 'r+', encoding='utf-8') as f:
                 data = f.read()
         except Exception:
             show_status('读取记录时出错，删除失败')
@@ -109,7 +115,7 @@ def _treeview_delete():
             data = data.split('\n')
             data.remove(item_value)
             try:
-                with open('./save.txt', 'w+', encoding='utf-8') as f:
+                with open(TVFILE, 'w+', encoding='utf-8') as f:
                     f.write('\n'.join(data))
             except Exception:
                 show_status('删除时出错，删除失败')
@@ -125,18 +131,28 @@ def _treeview_rb(event):
         treeview_rbmenu.post(event.x_root, event.y_root)
 
 
-# 读取已成功上传列表
-def readSuccessList():
-    if not (os.path.exists('./save.txt')):
+# 读取上传列表
+def readSuccessList(filename='./save.txt'):
+    if not (os.path.exists(filename)):
         return []
     list = []
-    file = open('save.txt', 'r+', encoding='utf-8')
+    file = open(filename, 'r+', encoding='utf-8')
     filelists = file.readlines()
     for filelist in filelists:
         info = filelist.strip().split(sep=',', maxsplit=2)
         info[0] = info[0].replace('\\', '/')
         list.append(tuple(info))
     return list
+
+
+def switch_list(filename='./save.txt'):
+    global TVFILE
+    TVFILE = filename
+    list_data = readSuccessList(filename)
+    for item in treeview.get_children():
+        treeview.delete(item)
+    for sup in list_data:
+        treeview.insert('', list_data.index(sup), value=sup)
 
 
 def operating_area(state=0):
@@ -227,7 +243,7 @@ def upload(Listbox_var):
         if (is_upload is True):
             show_status('上传文件：' + os.path.basename(file))
             res = uploader.post(file, file_data)
-            res = uploader.parseJson(res)
+            res = uploader.parse_json(res)
             show_status('解析结果中')
         else:
             res = {'code': 'error', 'msg': err_msg}
@@ -303,13 +319,15 @@ def upload(Listbox_var):
 
 if __name__ == '__main__':
     # 版本定义
-    VERSION = '1.0.5'
+    VERSION = '1.0.6'
     # 上传延迟
     upload_delay = 0
     # 多线程定义
     t_upload = {}
     # 文件选择器返回值
     _files = []
+    # 当前Treeview listfile
+    TVFILE = './save.txt'
     # 上传模式定义
     upload_modes = [('单个上传', 0, 'normal'), ('群组上传', 1, 'disable')]
     # 选择模式定义
@@ -343,15 +361,21 @@ if __name__ == '__main__':
         vUpload.set(0)
 
     # 其他选项框架
-    lf_others = tk.LabelFrame(mainFrame, text='其他选项', fg='blue')
+    lf_others = tk.LabelFrame(mainFrame, text='其他', fg='blue')
     lf_others.grid(row=0, column=3, rowspan=2, padx=10, pady=10, sticky=tk.N+tk.S+tk.E+tk.W)
     vDR = tk.IntVar()
     vSL = tk.IntVar()
     vSL.set(1)
     cb_duplicateRemoval = tk.Checkbutton(lf_others, text='检查上传重复（本地）', variable=vDR, state=tk.DISABLED)
-    cb_duplicateRemoval.grid(row=0, column=0, sticky=tk.W+tk.S)
+    cb_duplicateRemoval.grid(row=0, column=0, sticky=tk.W)
     cb_sizeLimitation = tk.Checkbutton(lf_others, text='过滤大于5M的文件', variable=vSL, state=tk.NORMAL)
-    cb_sizeLimitation.grid(row=1, column=0, sticky=tk.W+tk.S)
+    cb_sizeLimitation.grid(row=1, column=0, sticky=tk.W)
+    btn_cloud = tk.Button(lf_others, text='切换中继', command=smcloud)
+    btn_cloud.grid(row=2, column=0, sticky=tk.W+tk.E, padx=5)
+    btn_relay_list = tk.Button(lf_others, text='切换已转换列表', command=lambda: switch_list('./save2.txt'))
+    btn_relay_list.grid(row=3, column=0, sticky=tk.W+tk.E, padx=5)
+    btn_origin_list = tk.Button(lf_others, text='切换已上传列表', command=lambda: switch_list('./save.txt'))
+    btn_origin_list.grid(row=4, column=0, sticky=tk.W+tk.E, padx=5)
 
     # 选择器模式标签框架
     lf_selector_mode = tk.LabelFrame(mainFrame, text='选择器模式', fg='blue')
@@ -396,7 +420,7 @@ if __name__ == '__main__':
     lsbox.config(xscrollcommand=lsbox_xscrollbar.set)
 
     # 已上传文件列表
-    lf_treeview = tk.LabelFrame(mainFrame, text='已上传文件列表（右键复制 | 支持多选）', fg='green')
+    lf_treeview = tk.LabelFrame(mainFrame, text='已上传文件列表（右键复制 | CTRL多选）', fg='green')
     lf_treeview.grid(row=2, column=0, columnspan=4, padx=10, pady=5, sticky=tk.N+tk.S+tk.E+tk.W)
     treeview = tk.ttk.Treeview(lf_treeview, columns=['path', 'cdn', 'delete'], show='headings', height=10)
     treeview.grid(sticky=tk.N+tk.S+tk.E+tk.W)
@@ -407,7 +431,8 @@ if __name__ == '__main__':
     treeview.heading('cdn', text='CDN链接')
     treeview.heading('delete', text='删除链接')
     for sup in sUpload:
-        id = treeview.insert('', sUpload.index(sup), value=sup)
+        treeview.insert('', sUpload.index(sup), value=sup)
+        # id = treeview.insert('', sUpload.index(sup), value=sup)
     # 滚动条
     treeview_sby = tk.Scrollbar(lf_treeview, orient=tk.VERTICAL, command=treeview.yview)
     treeview.configure(yscrollcommand=treeview_sby.set)
