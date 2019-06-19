@@ -27,10 +27,12 @@
 
 **自动生成的文件可能随版本更新而变动**
 
-## 额外依赖（具体依赖请自行查看源代码）
+## 使用Python
 
-- urllib3
-- pywin32
+```Python
+pip install -r ./requirements.txt
+python ./gui.py
+```
 
 ## 其他文档
 
