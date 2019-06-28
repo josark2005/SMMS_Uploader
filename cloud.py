@@ -16,7 +16,7 @@ import time
 import threading
 
 THREAD_GET_RELAY = None
-CLOUD_LINK = 'http://smmscloud.srv.twocola.com/'
+CLOUD_LINK = 'https://smmscloud.srv.twocola.com/'
 RELAY = []
 UI_CONTROL = {}
 
