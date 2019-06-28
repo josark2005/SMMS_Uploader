@@ -27,11 +27,19 @@
 
 **自动生成的文件可能随版本更新而变动**
 
-## 使用Python
+## 使用Python运行
 
-```Python
+```
 pip install -r ./requirements.txt
 python ./gui.py
+```
+
+## 编译EXE
+
+```
+pip install -r ./requirements.txt
+pip install pywin32
+./build.bat
 ```
 
 ## 其他文档
@@ -41,8 +49,7 @@ python ./gui.py
 
 ## 更新日志（important only）
 
-- 修复文件夹遍历不选择的情况下出现自动选择文件的情况
-- 新增转换中继链接
+- 中继获取使用https方式
 
 ---
 
