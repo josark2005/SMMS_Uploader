@@ -246,8 +246,10 @@ def upload(Listbox_var):
             res = uploader.parse_json(res)
             show_status('解析结果中')
         else:
-            res = {'code': 'error', 'msg': err_msg}
-        if (res['code'] == 'success' and 'msg' not in res):
+            res = {'code': 'error', 'message': err_msg}
+
+        # 解析结果
+        if (res['code'] == 'success' and 'message' not in res):
             # 成功删除此项任务
             is_insert = True
             _files.remove(file)
@@ -259,7 +261,7 @@ def upload(Listbox_var):
             file_open.close()
         else:
             cdn = 'error'
-            delete = res['msg']
+            delete = res['message']
             # 文件过大或不支持的后缀名或无法存储或空文档
             exception = [
                 'File is empty.',
@@ -303,8 +305,22 @@ def upload(Listbox_var):
 
             # 失败文件- 失败原因
             file_open = open('fail.txt', 'a', newline='\n', encoding='utf-8')
-            file_open.write(file + ',' + res['msg'] + '\n')
+            file_open.write(file + ',' + res['message'] + '\n')
             file_open.close()
+
+            # 上传失败处理
+            if (res['code'] == 'image_repeated'):
+                #重复文件处理
+                show_status('文件已经存在于服务器')
+                is_insert = True
+                _files.remove(file)
+                cdn = res['images']
+                delete = '[repeated] no delete url'
+                # 本地路径-在线地址-删除地址
+                file_open = open('save.txt', 'a+', newline='\n', encoding='utf-8')
+                file_open.write(str(file.encode('utf-8'), 'utf-8') + ',' + cdn + ',' + delete + '\n')
+                file_open.close()
+
         data = (file, cdn, delete)
         if (is_insert is True):
             treeview.insert('', 'end', value=data)
@@ -319,7 +335,7 @@ def upload(Listbox_var):
 
 if __name__ == '__main__':
     # 版本定义
-    VERSION = '1.0.6'
+    VERSION = '1.0.7'
     # 上传延迟
     upload_delay = 0
     # 多线程定义

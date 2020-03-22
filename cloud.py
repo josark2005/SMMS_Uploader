@@ -16,7 +16,7 @@ import time
 import threading
 
 THREAD_GET_RELAY = None
-CLOUD_LINK = 'http://smmscloud.srv.twocola.com/'
+CLOUD_LINK = 'https://smmscloud.srv.twocola.com/'
 RELAY = []
 UI_CONTROL = {}
 
@@ -96,7 +96,7 @@ class smcloud:
     def _thread_get_relay(cls):
         """
         Get the relay server list
-        @file:  /domains_relay_v1.json
+        @file:  /deploy/v1/domains_relay_v1.json
         """
         global THREAD_GET_RELAY
         global UI_CONTROL
@@ -104,7 +104,7 @@ class smcloud:
         cls.tips('获取中继中')
         global CLOUD_LINK
         global RELAY
-        url = CLOUD_LINK + 'domains_relay_v1.json'
+        url = CLOUD_LINK + 'deploy/v1/domains_relay_v1.json'
         try:
             http = requests.get(url, timeout=10, verify=False)
         except Exception:
