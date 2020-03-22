@@ -12,12 +12,7 @@ import urllib3
 
 
 class smms:
-    """
-    This class is made for SMMS Uploader
-    @author:    Jokin
-    """
 
-    @classmethod
     def __init__(cls):
         print('SMMS上传类初始化')
         # 关闭证书验证
@@ -25,7 +20,6 @@ class smms:
         # 取消关闭验证安全提醒
         urllib3.disable_warnings()
 
-    @classmethod
     def post(cls, filename, file_data, ua='Mozilla/5.0 (Windows NT 10.0; Win64; x64) WallpaperBackuper/1.0.0'):
         print('posting: ' + filename)
         filename = str(base64.b64encode(filename.encode('utf-8')), 'utf-8')
@@ -33,7 +27,7 @@ class smms:
         try:
             res = http.request(
                 'POST',
-                'https://sm.ms/api/upload',
+                'https://sm.ms/api/v2/upload',
                 headers={'user-agent': ua},
                 fields={
                     'smfile': (filename, file_data),
@@ -42,7 +36,6 @@ class smms:
             res = {'code': 'error', 'msg': 'Connection failed.'}
         return res
 
-    @classmethod
     def parse_json(cls, ref):
         """
         Parse JSON data
@@ -62,18 +55,14 @@ class smms:
         return res
 
 
-@staticmethod
 def test():
-    """
-    For test
-    """
 
     file = open('t.png', 'rb')
     file_data = file.read()
     file.close()
     uploader = smms()
     res = uploader.post('t.png', file_data)
-    print(uploader.parseJson(res))
+    print(uploader.parse_json(res))
 
 
 if __name__ == '__main__':
